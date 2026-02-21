@@ -1,108 +1,127 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { loginStart, loginSuccess, loginFailure, clearError } from '../store/authSlice';
-import { authAPI } from '../services/api';
+import { loginSuccess } from '../store/authSlice';
+import api from '../services/api';
 
 export default function Login() {
-    const [isRegister, setIsRegister] = useState(false);
-    const [form, setForm] = useState({ name: '', email: '', password: '' });
+    const [isLogin, setIsLogin] = useState(true);
+    const [formData, setFormData] = useState({ name: '', email: '', password: '' });
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
+
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const { loading, error } = useSelector((state) => state.auth);
+    const { isAuthenticated } = useSelector((state) => state.auth);
+
+    useEffect(() => {
+        if (isAuthenticated) navigate('/');
+    }, [isAuthenticated, navigate]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        dispatch(loginStart());
+        setError('');
+        setLoading(true);
+
         try {
-            const { data } = isRegister
-                ? await authAPI.register(form)
-                : await authAPI.login({ email: form.email, password: form.password });
-            dispatch(loginSuccess({ user: data.user, token: data.token }));
+            const endpoint = isLogin ? '/auth/login' : '/auth/register';
+            const { data } = await api.post(endpoint, formData);
+            dispatch(loginSuccess(data));
             navigate('/');
         } catch (err) {
-            dispatch(loginFailure(err.response?.data?.error || 'Something went wrong'));
+            setError(err.response?.data?.error || 'Authentication failed');
+        } finally {
+            setLoading(false);
         }
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
-            {/* Background gradient orbs */}
-            <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-primary-600/20 rounded-full blur-[120px]" />
-            <div className="absolute bottom-[-20%] right-[-10%] w-[400px] h-[400px] bg-accent-500/15 rounded-full blur-[100px]" />
+        <div className="min-h-screen flex items-center justify-center p-6 relative">
+            <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary-600/10 rounded-full blur-[120px] animate-pulse"></div>
+            <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent-500/10 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '2s' }}></div>
 
-            <div className="glass-card w-full max-w-md animate-fade-in relative z-10">
-                <div className="text-center mb-8">
-                    <h1 className="text-3xl font-bold gradient-text mb-2">CashFlow Minimizer</h1>
-                    <p className="text-dark-400">
-                        {isRegister ? 'Create your account' : 'Sign in to continue'}
-                    </p>
+            <div className="w-full max-w-md z-10">
+                <div className="text-center mb-10 group">
+                    <div className="w-20 h-20 bg-gradient-to-br from-primary-500 to-accent-500 rounded-3xl mx-auto mb-6 flex items-center justify-center text-4xl shadow-2xl shadow-primary-500/20 group-hover:scale-110 transition-transform duration-500">
+                        💵
+                    </div>
+                    <h1 className="text-4xl font-black tracking-tighter text-white mb-2">MINIMIZER</h1>
+                    <p className="text-dark-500 font-bold uppercase tracking-[0.3em] text-[10px]">Financial Graph Engine</p>
                 </div>
 
-                {error && (
-                    <div className="mb-4 p-3 bg-danger-500/10 border border-danger-500/30 rounded-xl text-danger-400 text-sm">
-                        {error}
-                    </div>
-                )}
+                <div className="glass-card p-10 border-white/10 relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary-500 to-transparent opacity-50"></div>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    {isRegister && (
-                        <div>
-                            <label className="block text-sm text-dark-300 mb-1.5">Full Name</label>
-                            <input
-                                type="text"
-                                value={form.name}
-                                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                                className="w-full px-4 py-3 bg-dark-800/60 border border-dark-600/50 rounded-xl text-dark-100 placeholder-dark-500 focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/30 transition-all"
-                                placeholder="John Doe"
-                                required
-                            />
+                    <h2 className="text-2xl font-bold text-white mb-8 text-center">{isLogin ? 'Welcome Back' : 'Create Protocol'}</h2>
+
+                    {error && (
+                        <div className="mb-6 p-4 rounded-2xl bg-danger-500/10 border border-danger-500/20 text-danger-400 text-sm font-medium animate-shake">
+                            ⚠️ {error}
                         </div>
                     )}
 
-                    <div>
-                        <label className="block text-sm text-dark-300 mb-1.5">Email</label>
-                        <input
-                            type="email"
-                            value={form.email}
-                            onChange={(e) => setForm({ ...form, email: e.target.value })}
-                            className="w-full px-4 py-3 bg-dark-800/60 border border-dark-600/50 rounded-xl text-dark-100 placeholder-dark-500 focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/30 transition-all"
-                            placeholder="you@example.com"
-                            required
-                        />
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        {!isLogin && (
+                            <div>
+                                <label className="block text-xs font-bold text-dark-500 uppercase tracking-widest mb-2 ml-1">Identity Name</label>
+                                <input
+                                    type="text"
+                                    required
+                                    className="w-full px-5 py-4 bg-dark-950/50 border border-white/5 rounded-2xl text-white focus:outline-none focus:border-primary-500/50 focus:ring-4 focus:ring-primary-500/10 transition-all placeholder:text-dark-700 font-medium"
+                                    placeholder="e.g. Satoshi Nakamoto"
+                                    value={formData.name}
+                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                />
+                            </div>
+                        )}
+                        <div>
+                            <label className="block text-xs font-bold text-dark-500 uppercase tracking-widest mb-2 ml-1">Access Email</label>
+                            <input
+                                type="email"
+                                required
+                                className="w-full px-5 py-4 bg-dark-950/50 border border-white/5 rounded-2xl text-white focus:outline-none focus:border-primary-500/50 focus:ring-4 focus:ring-primary-500/10 transition-all placeholder:text-dark-700 font-medium"
+                                placeholder="name@nexus.com"
+                                value={formData.email}
+                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-dark-500 uppercase tracking-widest mb-2 ml-1">Security Key</label>
+                            <input
+                                type="password"
+                                required
+                                className="w-full px-5 py-4 bg-dark-950/50 border border-white/5 rounded-2xl text-white focus:outline-none focus:border-primary-500/50 focus:ring-4 focus:ring-primary-500/10 transition-all placeholder:text-dark-700 font-medium"
+                                placeholder="••••••••"
+                                value={formData.password}
+                                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                            />
+                        </div>
+
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="w-full py-4 bg-primary-600 hover:bg-primary-500 text-white font-bold rounded-2xl shadow-xl shadow-primary-600/20 active:scale-[0.98] transition-all disabled:opacity-50 disabled:active:scale-100 flex items-center justify-center gap-2"
+                        >
+                            {loading ? (
+                                <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                            ) : (
+                                <>
+                                    <span>{isLogin ? 'Initialize Session' : 'Generate Core'}</span>
+                                    <span className="text-xl">🚀</span>
+                                </>
+                            )}
+                        </button>
+                    </form>
+
+                    <div className="mt-8 pt-8 border-t border-white/5 text-center">
+                        <button
+                            onClick={() => setIsLogin(!isLogin)}
+                            className="text-sm font-bold text-dark-400 hover:text-primary-400 transition-colors"
+                        >
+                            {isLogin ? "New here? Create an account" : "Already have an account? Sign in"}
+                        </button>
                     </div>
-
-                    <div>
-                        <label className="block text-sm text-dark-300 mb-1.5">Password</label>
-                        <input
-                            type="password"
-                            value={form.password}
-                            onChange={(e) => setForm({ ...form, password: e.target.value })}
-                            className="w-full px-4 py-3 bg-dark-800/60 border border-dark-600/50 rounded-xl text-dark-100 placeholder-dark-500 focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/30 transition-all"
-                            placeholder="••••••••"
-                            required
-                            minLength={6}
-                        />
-                    </div>
-
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="w-full py-3 bg-gradient-to-r from-primary-600 to-primary-500 text-white font-semibold rounded-xl hover:from-primary-500 hover:to-primary-400 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-primary-600/20"
-                    >
-                        {loading ? 'Please wait...' : isRegister ? 'Create Account' : 'Sign In'}
-                    </button>
-                </form>
-
-                <p className="text-center text-sm text-dark-400 mt-6">
-                    {isRegister ? 'Already have an account?' : "Don't have an account?"}{' '}
-                    <button
-                        onClick={() => { setIsRegister(!isRegister); dispatch(clearError()); }}
-                        className="text-primary-400 hover:text-primary-300 font-medium transition-colors"
-                    >
-                        {isRegister ? 'Sign In' : 'Sign Up'}
-                    </button>
-                </p>
+                </div>
             </div>
         </div>
     );

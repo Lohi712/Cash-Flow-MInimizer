@@ -5,58 +5,44 @@ const auth = require('../middleware/auth');
 
 const router = express.Router();
 
-// All routes require authentication
+// All routes require auth
 router.use(auth);
 
-// GET /api/banks — List all banks for the user
+// GET /api/banks
 router.get('/', async (req, res) => {
     try {
-        const banks = await Bank.find({ user: req.userId }).sort({ createdAt: -1 });
+        const banks = await Bank.find({ user: req.userId });
         res.json(banks);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
 
-// POST /api/banks — Add a new bank
+// POST /api/banks
 router.post('/', async (req, res) => {
     try {
         const { name, paymentTypes } = req.body;
-
-        if (!name || !paymentTypes || paymentTypes.length === 0) {
-            return res.status(400).json({ error: 'Name and at least one payment type are required.' });
-        }
-
-        const bank = await Bank.create({
-            name,
-            paymentTypes,
-            user: req.userId,
-        });
-
+        const bank = new Bank({ name, paymentTypes, user: req.userId });
+        await bank.save();
         res.status(201).json(bank);
     } catch (error) {
-        if (error.code === 11000) {
-            return res.status(400).json({ error: 'A bank with this name already exists.' });
-        }
         res.status(500).json({ error: error.message });
     }
 });
 
-// DELETE /api/banks/:id — Delete a bank
+// DELETE /api/banks/:id
 router.delete('/:id', async (req, res) => {
     try {
         const bank = await Bank.findOneAndDelete({ _id: req.params.id, user: req.userId });
-        if (!bank) {
-            return res.status(404).json({ error: 'Bank not found.' });
-        }
+        if (!bank) return res.status(404).json({ error: 'Bank not found' });
 
-        // Also delete all transactions involving this bank
+        // Also delete associated transactions
         await Transaction.deleteMany({
-            $or: [{ debtor: req.params.id }, { creditor: req.params.id }],
-            user: req.userId,
+            $or: [{ debtor: bank._id }, { creditor: bank._id }],
+            user: req.userId
         });
 
-        res.json({ message: 'Bank and associated transactions deleted.' });
+        res.json({ message: 'Bank and associated transactions deleted' });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

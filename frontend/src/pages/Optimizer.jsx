@@ -1,128 +1,136 @@
-import { useState } from 'react';
-import { optimizeAPI } from '../services/api';
+import { useState, useEffect } from 'react';
+import api from '../services/api';
 
 export default function Optimizer() {
     const [result, setResult] = useState(null);
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
 
-    const runOptimizer = async () => {
+    const handleOptimize = async () => {
         setLoading(true);
-        setError('');
-        setResult(null);
         try {
-            const { data } = await optimizeAPI.run();
+            const { data } = await api.post('/optimize');
             setResult(data);
         } catch (err) {
-            setError(err.response?.data?.error || 'Failed to optimize');
+            alert(err.response?.data?.error || 'Optimization failed');
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="animate-fade-in">
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold gradient-text">Cash Flow Optimizer</h1>
-                <p className="text-dark-400 mt-1">Minimize the number of transactions using greedy algorithm</p>
-            </div>
+        <div className="animate-fade-in pb-20">
+            <div className="glass-card bg-gradient-to-br from-dark-900/60 to-primary-900/10 p-12 mb-12 border-primary-500/20 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-96 h-96 bg-primary-500/5 rounded-full blur-[100px] -mr-48 -mt-48"></div>
 
-            {/* Run Button */}
-            <div className="glass-card text-center mb-8">
-                <div className="mb-4">
-                    <p className="text-5xl mb-3">⚡</p>
-                    <p className="text-dark-300 max-w-md mx-auto text-sm">
-                        The optimizer uses a <span className="text-primary-400 font-medium">Max Heap</span> based
-                        greedy algorithm to settle all debts with the minimum number of transactions,
-                        while respecting payment type compatibility.
+                <div className="relative z-10 flex flex-col items-center text-center">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary-500/10 rounded-full border border-primary-500/20 text-[10px] font-black text-primary-400 uppercase tracking-widest mb-8">
+                        <span className="w-1.5 h-1.5 rounded-full bg-primary-400 animate-ping"></span>
+                        Algorithmic Compression Active
+                    </div>
+
+                    <h1 className="text-6xl font-black text-white tracking-tighter mb-6 leading-[0.9]">
+                        Optimize <span className="gradient-text">Cash Flow</span>
+                    </h1>
+                    <p className="text-lg text-dark-400 max-w-2xl font-medium mb-10 leading-relaxed">
+                        Execute the Max-Heap settlement engine to identify redundant value cycles and collapse them into a minimum set of direct transfers.
                     </p>
+
+                    <button
+                        onClick={handleOptimize}
+                        disabled={loading}
+                        className="group relative px-12 py-6 bg-primary-600 hover:bg-primary-500 text-white font-black rounded-3xl shadow-2xl shadow-primary-600/30 active:scale-95 transition-all text-xl disabled:opacity-50 disabled:active:scale-100"
+                    >
+                        <div className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity blur-xl bg-primary-400/50 -z-10"></div>
+                        {loading ? (
+                            <div className="flex items-center gap-4">
+                                <span className="w-6 h-6 border-4 border-white/20 border-t-white rounded-full animate-spin"></span>
+                                <span>Compressing Graph...</span>
+                            </div>
+                        ) : (
+                            <div className="flex items-center gap-4">
+                                <span>Run Settlement Engine</span>
+                                <span className="text-2xl animate-pulse">⚡</span>
+                            </div>
+                        )}
+                    </button>
                 </div>
-                <button
-                    onClick={runOptimizer}
-                    disabled={loading}
-                    className="px-8 py-3 bg-gradient-to-r from-primary-600 to-accent-500 text-white font-bold rounded-xl hover:from-primary-500 hover:to-accent-400 transition-all shadow-lg shadow-primary-600/25 disabled:opacity-50 text-lg"
-                >
-                    {loading ? '⏳ Optimizing...' : '🚀 Run Optimizer'}
-                </button>
             </div>
 
-            {error && (
-                <div className="mb-6 p-4 bg-danger-500/10 border border-danger-500/30 rounded-xl text-danger-400">
-                    {error}
-                </div>
-            )}
-
-            {/* Results */}
             {result && (
-                <div className="animate-fade-in space-y-6">
-                    {/* Summary Stats */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                        <div className="glass-card text-center">
-                            <p className="text-sm text-dark-400 mb-1">Original Transactions</p>
-                            <p className="text-3xl font-bold text-danger-400">{result.originalCount}</p>
+                <div className="animate-slide-up">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+                        <div className="metric-orb glass-card">
+                            <p className="text-[10px] font-black text-dark-500 uppercase tracking-widest mb-2">Pre-Settlement Count</p>
+                            <p className="text-4xl font-black text-white tracking-tighter">{result.originalCount}</p>
+                            <div className="mt-4 px-3 py-1 bg-white/5 rounded-lg text-[10px] font-bold text-dark-400 uppercase">Original Graph</div>
                         </div>
-                        <div className="glass-card text-center">
-                            <p className="text-sm text-dark-400 mb-1">Optimized Transactions</p>
-                            <p className="text-3xl font-bold text-accent-400">{result.optimizedCount}</p>
+                        <div className="metric-orb glass-card border-accent-500/20 bg-accent-500/5">
+                            <p className="text-[10px] font-black text-accent-500 uppercase tracking-widest mb-2">Optimized Count</p>
+                            <p className="text-4xl font-black text-white tracking-tighter">{result.optimizedCount}</p>
+                            <div className="mt-4 px-3 py-1 bg-accent-500/20 rounded-lg text-[10px] font-bold text-accent-400 uppercase">Minimized Graph</div>
                         </div>
-                        <div className="glass-card text-center">
-                            <p className="text-sm text-dark-400 mb-1">Transactions Saved</p>
-                            <p className="text-3xl font-bold text-primary-400">{result.savings}</p>
-                            {result.originalCount > 0 && (
-                                <p className="text-xs text-dark-500 mt-1">
-                                    {((result.savings / result.originalCount) * 100).toFixed(0)}% reduction
-                                </p>
-                            )}
+                        <div className="metric-orb glass-card border-primary-500/20 bg-primary-500/5">
+                            <p className="text-[10px] font-black text-primary-400 uppercase tracking-widest mb-2">Efficiency Gain</p>
+                            <p className="text-4xl font-black text-white tracking-tighter">
+                                {Math.round((1 - result.optimizedCount / (result.originalCount || 1)) * 100)}%
+                            </p>
+                            <div className="mt-4 px-3 py-1 bg-primary-500/20 rounded-lg text-[10px] font-bold text-primary-400 uppercase">Compression Rate</div>
                         </div>
                     </div>
 
-                    {/* Optimized Transactions */}
-                    <div className="glass-card">
-                        <h3 className="text-lg font-bold text-primary-300 mb-4">Optimized Settlement Plan</h3>
-                        {result.optimizedTransactions.length === 0 ? (
-                            <p className="text-dark-500">All balances are already settled!</p>
-                        ) : (
-                            <div className="space-y-3">
-                                {result.optimizedTransactions.map((tx, i) => (
-                                    <div key={i} className="flex items-center gap-4 p-4 bg-dark-800/40 rounded-xl animate-slide-in"
-                                        style={{ animationDelay: `${i * 100}ms` }}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div className="glass-card">
+                            <div className="flex items-center justify-between mb-8 border-b border-white/5 pb-6">
+                                <div>
+                                    <h3 className="text-xl font-bold text-white mb-1">Settlement Sequence</h3>
+                                    <p className="text-xs text-dark-500 font-black uppercase tracking-widest">Optimized Transfer Protocol</p>
+                                </div>
+                                <div className="w-10 h-10 rounded-2xl bg-dark-950 flex items-center justify-center text-xl">📜</div>
+                            </div>
+
+                            <div className="space-y-4 max-h-[600px] overflow-y-auto pr-4 custom-scrollbar">
+                                {result.settlements.map((s, i) => (
+                                    <div
+                                        key={i}
+                                        className="p-5 rounded-2xl bg-dark-950 border border-white/5 flex items-center justify-between gap-4 group hover:border-accent-500/20 transition-all animate-staggered-fade-in"
+                                        style={{ animationDelay: `${i * 0.05}s` }}
                                     >
-                                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center text-white text-sm font-bold">
-                                            {i + 1}
+                                        <div className="flex items-center gap-4 flex-1 min-w-0">
+                                            <div className="text-sm font-bold text-dark-400 truncate">{s.from}</div>
+                                            <div className="text-lg text-dark-700 animate-pulse">➡️</div>
+                                            <div className="text-sm font-bold text-white truncate">{s.to}</div>
                                         </div>
-                                        <div className="flex-1 flex items-center gap-3">
-                                            <span className="px-3 py-1 bg-danger-500/10 text-danger-400 rounded-lg text-sm font-medium">
-                                                {tx.from}
-                                            </span>
-                                            <div className="flex items-center gap-1 text-dark-500">
-                                                <span>→</span>
-                                                <span className="text-xs">pays</span>
-                                                <span>→</span>
-                                            </div>
-                                            <span className="px-3 py-1 bg-accent-500/10 text-accent-400 rounded-lg text-sm font-medium">
-                                                {tx.to}
-                                            </span>
-                                        </div>
-                                        <span className="text-lg font-bold text-white">₹{tx.amount.toLocaleString()}</span>
+                                        <div className="text-lg font-black text-accent-400">₹{s.amount.toLocaleString()}</div>
                                     </div>
                                 ))}
                             </div>
-                        )}
-                    </div>
+                        </div>
 
-                    {/* Net Amounts */}
-                    <div className="glass-card">
-                        <h3 className="text-lg font-bold text-primary-300 mb-4">Net Amounts per Bank</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                            {result.netAmounts.map(({ bankName, netAmount }) => (
-                                <div key={bankName} className="flex items-center justify-between p-3 bg-dark-800/40 rounded-xl">
-                                    <span className="text-sm font-medium text-dark-200">{bankName}</span>
-                                    <span className={`text-sm font-bold ${netAmount > 0 ? 'text-accent-400' : netAmount < 0 ? 'text-danger-400' : 'text-dark-500'
-                                        }`}>
-                                        {netAmount > 0 ? '+' : ''}₹{netAmount.toLocaleString()}
-                                    </span>
+                        <div className="glass-card">
+                            <div className="flex items-center justify-between mb-8 border-b border-white/5 pb-6">
+                                <div>
+                                    <h3 className="text-xl font-bold text-white mb-1">Final Net Weights</h3>
+                                    <p className="text-xs text-dark-500 font-black uppercase tracking-widest">Post-Optimization Node Status</p>
                                 </div>
-                            ))}
+                                <div className="w-10 h-10 rounded-2xl bg-dark-950 flex items-center justify-center text-xl">⚖️</div>
+                            </div>
+
+                            <div className="space-y-4">
+                                {result.finalStates.map((fs, i) => (
+                                    <div
+                                        key={i}
+                                        className="p-5 rounded-2xl bg-dark-950 border border-white/5 flex items-center justify-between group hover:border-white/10 transition-all"
+                                    >
+                                        <div className="flex items-center gap-4">
+                                            <div className={`w-2 h-8 rounded-full ${fs.amount >= 0 ? 'bg-accent-500' : 'bg-danger-500'}`}></div>
+                                            <p className="font-bold text-white">{fs.bank}</p>
+                                        </div>
+                                        <p className={`font-black text-lg ${fs.amount >= 0 ? 'text-accent-400' : 'text-danger-400'}`}>
+                                            {fs.amount >= 0 ? '+' : '-'}₹{Math.abs(fs.amount).toLocaleString()}
+                                        </p>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -7,102 +7,71 @@ const router = express.Router();
 
 router.use(auth);
 
-// GET /api/transactions — List all transactions (with optional filters)
+// GET /api/transactions
 router.get('/', async (req, res) => {
     try {
-        const { bankId, startDate, endDate, minAmount, maxAmount } = req.query;
-        const filter = { user: req.userId };
+        const { bankId, minAmount, maxAmount } = req.query;
+        let query = { user: req.userId };
 
         if (bankId) {
-            filter.$or = [{ debtor: bankId }, { creditor: bankId }];
-        }
-        if (startDate || endDate) {
-            filter.createdAt = {};
-            if (startDate) filter.createdAt.$gte = new Date(startDate);
-            if (endDate) filter.createdAt.$lte = new Date(endDate);
+            query.$or = [{ debtor: bankId }, { creditor: bankId }];
         }
         if (minAmount || maxAmount) {
-            filter.amount = {};
-            if (minAmount) filter.amount.$gte = parseFloat(minAmount);
-            if (maxAmount) filter.amount.$lte = parseFloat(maxAmount);
+            query.amount = {};
+            if (minAmount) query.amount.$gte = parseFloat(minAmount);
+            if (maxAmount) query.amount.$lte = parseFloat(maxAmount);
         }
 
-        const transactions = await Transaction.find(filter)
-            .populate('debtor', 'name paymentTypes')
-            .populate('creditor', 'name paymentTypes')
+        const transactions = await Transaction.find(query)
+            .populate('debtor', 'name')
+            .populate('creditor', 'name')
             .sort({ createdAt: -1 });
-
         res.json(transactions);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
 
-// POST /api/transactions — Add a transaction
+// POST /api/transactions
 router.post('/', async (req, res) => {
     try {
         const { debtor, creditor, amount } = req.body;
 
-        if (!debtor || !creditor || !amount) {
-            return res.status(400).json({ error: 'Debtor, creditor, and amount are required.' });
-        }
-
-        if (debtor === creditor) {
-            return res.status(400).json({ error: 'Debtor and creditor cannot be the same bank.' });
-        }
-
-        if (amount <= 0) {
-            return res.status(400).json({ error: 'Amount must be greater than 0.' });
-        }
-
-        // Verify both banks exist and belong to user
-        const [debtorBank, creditorBank] = await Promise.all([
-            Bank.findOne({ _id: debtor, user: req.userId }),
-            Bank.findOne({ _id: creditor, user: req.userId }),
-        ]);
-
-        if (!debtorBank || !creditorBank) {
-            return res.status(404).json({ error: 'One or both banks not found.' });
-        }
-
-        const transaction = await Transaction.create({
-            debtor,
-            creditor,
-            amount,
-            user: req.userId,
+        // Validate banks exist and belong to user
+        const banks = await Bank.find({
+            _id: { $in: [debtor, creditor] },
+            user: req.userId
         });
+        if (banks.length !== 2) {
+            return res.status(400).json({ error: 'One or both banks not found' });
+        }
 
-        // Update net amounts
+        const tx = new Transaction({ debtor, creditor, amount, user: req.userId });
+        await tx.save();
+
+        // Update bank net amounts
         await Bank.findByIdAndUpdate(debtor, { $inc: { netAmount: -amount } });
         await Bank.findByIdAndUpdate(creditor, { $inc: { netAmount: amount } });
 
-        const populated = await Transaction.findById(transaction._id)
-            .populate('debtor', 'name paymentTypes')
-            .populate('creditor', 'name paymentTypes');
-
-        res.status(201).json(populated);
+        const populatedTx = await tx.populate('debtor creditor', 'name');
+        res.status(201).json(populatedTx);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
 
-// DELETE /api/transactions/:id — Delete a transaction
+// DELETE /api/transactions/:id
 router.delete('/:id', async (req, res) => {
     try {
-        const transaction = await Transaction.findOneAndDelete({
-            _id: req.params.id,
-            user: req.userId,
-        });
+        const tx = await Transaction.findOne({ _id: req.params.id, user: req.userId });
+        if (!tx) return res.status(404).json({ error: 'Transaction not found' });
 
-        if (!transaction) {
-            return res.status(404).json({ error: 'Transaction not found.' });
-        }
+        // Reverse bank net amounts before deleting
+        await Bank.findByIdAndUpdate(tx.debtor, { $inc: { netAmount: tx.amount } });
+        await Bank.findByIdAndUpdate(tx.creditor, { $inc: { netAmount: -tx.amount } });
 
-        // Reverse net amounts
-        await Bank.findByIdAndUpdate(transaction.debtor, { $inc: { netAmount: transaction.amount } });
-        await Bank.findByIdAndUpdate(transaction.creditor, { $inc: { netAmount: -transaction.amount } });
-
-        res.json({ message: 'Transaction deleted and balances reversed.' });
+        await tx.deleteOne();
+        res.json({ message: 'Transaction deleted' });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

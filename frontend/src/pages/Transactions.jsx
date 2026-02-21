@@ -1,235 +1,218 @@
-import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { setTransactions, addTransaction, removeTransaction, setLoading } from '../store/transactionSlice';
-import { setBanks } from '../store/bankSlice';
-import { transactionsAPI, banksAPI } from '../services/api';
+import { useState, useEffect } from 'react';
+import api from '../services/api';
 
 export default function Transactions() {
-    const dispatch = useDispatch();
-    const { list: transactions, loading } = useSelector((state) => state.transactions);
-    const { list: banks } = useSelector((state) => state.banks);
-    const [showForm, setShowForm] = useState(false);
-    const [form, setForm] = useState({ debtor: '', creditor: '', amount: '' });
-    const [error, setError] = useState('');
-    const [filter, setFilter] = useState({ bankId: '', minAmount: '', maxAmount: '' });
+    const [transactions, setTransactions] = useState([]);
+    const [banks, setBanks] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [isAdding, setIsAdding] = useState(false);
+    const [formData, setFormData] = useState({ debtor: '', creditor: '', amount: '' });
+    const [filters, setFilters] = useState({ bankId: '', minAmount: '', maxAmount: '' });
 
     useEffect(() => {
-        dispatch(setLoading(true));
-        Promise.all([
-            transactionsAPI.getAll(),
-            banksAPI.getAll(),
-        ]).then(([txRes, bankRes]) => {
-            dispatch(setTransactions(txRes.data));
-            dispatch(setBanks(bankRes.data));
-        }).catch(() => dispatch(setLoading(false)));
-    }, [dispatch]);
+        fetchData();
+    }, [filters]);
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setError('');
+    const fetchData = async () => {
         try {
-            const { data } = await transactionsAPI.create({
-                debtor: form.debtor,
-                creditor: form.creditor,
-                amount: parseFloat(form.amount),
-            });
-            dispatch(addTransaction(data));
-            setForm({ debtor: '', creditor: '', amount: '' });
-            setShowForm(false);
-            // Refresh banks to get updated net amounts
-            const bankRes = await banksAPI.getAll();
-            dispatch(setBanks(bankRes.data));
+            const [txRes, bankRes] = await Promise.all([
+                api.get('/transactions', { params: filters }),
+                api.get('/banks')
+            ]);
+            setTransactions(txRes.data);
+            setBanks(bankRes.data);
         } catch (err) {
-            setError(err.response?.data?.error || 'Failed to add transaction');
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleAddTx = async (e) => {
+        e.preventDefault();
+        if (formData.debtor === formData.creditor) return alert('Debtor and Creditor cannot be the same bank');
+        try {
+            await api.post('/transactions', formData);
+            setFormData({ debtor: '', creditor: '', amount: '' });
+            setIsAdding(false);
+            fetchData();
+        } catch (err) {
+            alert(err.response?.data?.error || 'Execution failed');
         }
     };
 
     const handleDelete = async (id) => {
         try {
-            await transactionsAPI.delete(id);
-            dispatch(removeTransaction(id));
-            const bankRes = await banksAPI.getAll();
-            dispatch(setBanks(bankRes.data));
+            await api.delete(`/transactions/${id}`);
+            fetchData();
         } catch (err) {
-            setError(err.response?.data?.error || 'Failed to delete');
+            console.error(err);
         }
     };
 
-    const handleFilter = async () => {
-        dispatch(setLoading(true));
-        try {
-            const params = {};
-            if (filter.bankId) params.bankId = filter.bankId;
-            if (filter.minAmount) params.minAmount = filter.minAmount;
-            if (filter.maxAmount) params.maxAmount = filter.maxAmount;
-            const { data } = await transactionsAPI.getAll(params);
-            dispatch(setTransactions(data));
-        } catch { dispatch(setLoading(false)); }
-    };
+    if (loading && transactions.length === 0) return (
+        <div className="flex items-center justify-center h-[60vh]">
+            <div className="w-12 h-12 border-4 border-primary-500/20 border-t-primary-500 rounded-full animate-spin"></div>
+        </div>
+    );
 
     return (
-        <div className="animate-fade-in">
-            <div className="flex items-center justify-between mb-8">
+        <div className="animate-fade-in pb-20">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
                 <div>
-                    <h1 className="text-3xl font-bold gradient-text">Transactions</h1>
-                    <p className="text-dark-400 mt-1">Manage cash flows between banks</p>
+                    <h1 className="text-5xl font-black tracking-tighter text-white mb-2">Ledger Stream</h1>
+                    <p className="text-dark-400 font-medium">Real-time visualization of inter-node value transfers.</p>
                 </div>
                 <button
-                    onClick={() => setShowForm(!showForm)}
-                    className="px-5 py-2.5 bg-gradient-to-r from-primary-600 to-primary-500 text-white font-medium rounded-xl hover:from-primary-500 hover:to-primary-400 transition-all shadow-lg shadow-primary-600/20"
+                    onClick={() => setIsAdding(!isAdding)}
+                    className={`px-8 py-4 rounded-2xl font-bold flex items-center gap-3 transition-all active:scale-95 shadow-xl ${isAdding ? 'bg-dark-900 text-white border border-white/10' : 'bg-accent-500 hover:bg-accent-400 text-dark-950 shadow-accent-500/20'}`}
                 >
-                    {showForm ? 'Cancel' : '+ Add Transaction'}
+                    {isAdding ? 'Cancel Entry' : 'Manual Transfer'}
+                    <span className="text-xl">{isAdding ? '➖' : '💸'}</span>
                 </button>
             </div>
 
-            {error && (
-                <div className="mb-4 p-3 bg-danger-500/10 border border-danger-500/30 rounded-xl text-danger-400 text-sm">
-                    {error}
-                </div>
-            )}
-
-            {/* Add Transaction Form */}
-            {showForm && (
-                <div className="glass-card mb-6 animate-slide-in">
-                    <h3 className="text-lg font-semibold mb-4">New Transaction</h3>
-                    <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {isAdding && (
+                <div className="glass-card mb-12 border-accent-500/20 relative overflow-hidden animate-slide-down">
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-accent-500 to-primary-500"></div>
+                    <form onSubmit={handleAddTx} className="grid grid-cols-1 md:grid-cols-3 gap-8">
                         <div>
-                            <label className="block text-sm text-dark-300 mb-1.5">From (Debtor)</label>
+                            <label className="block text-xs font-black text-dark-500 uppercase tracking-[0.2em] mb-4">Origin Node (Debtor)</label>
                             <select
-                                value={form.debtor}
-                                onChange={(e) => setForm({ ...form, debtor: e.target.value })}
-                                className="w-full px-4 py-3 bg-dark-800/60 border border-dark-600/50 rounded-xl text-dark-100 focus:outline-none focus:border-primary-500/50 transition-all"
                                 required
+                                className="w-full px-6 py-4 bg-dark-950/50 border border-white/5 rounded-2xl text-white focus:outline-none focus:border-accent-500/50 focus:ring-4 focus:ring-accent-500/10 transition-all font-bold appearance-none cursor-pointer"
+                                value={formData.debtor}
+                                onChange={(e) => setFormData({ ...formData, debtor: e.target.value })}
                             >
-                                <option value="">Select bank</option>
-                                {banks.map(b => <option key={b._id} value={b._id}>{b.name}</option>)}
+                                <option value="" className="bg-dark-900">Select Bank</option>
+                                {banks.map(b => <option key={b._id} value={b._id} className="bg-dark-900">{b.name}</option>)}
                             </select>
                         </div>
                         <div>
-                            <label className="block text-sm text-dark-300 mb-1.5">To (Creditor)</label>
+                            <label className="block text-xs font-black text-dark-500 uppercase tracking-[0.2em] mb-4">Target Node (Creditor)</label>
                             <select
-                                value={form.creditor}
-                                onChange={(e) => setForm({ ...form, creditor: e.target.value })}
-                                className="w-full px-4 py-3 bg-dark-800/60 border border-dark-600/50 rounded-xl text-dark-100 focus:outline-none focus:border-primary-500/50 transition-all"
                                 required
+                                className="w-full px-6 py-4 bg-dark-950/50 border border-white/5 rounded-2xl text-white focus:outline-none focus:border-accent-500/50 focus:ring-4 focus:ring-accent-500/10 transition-all font-bold appearance-none cursor-pointer"
+                                value={formData.creditor}
+                                onChange={(e) => setFormData({ ...formData, creditor: e.target.value })}
                             >
-                                <option value="">Select bank</option>
-                                {banks.filter(b => b._id !== form.debtor).map(b => (
-                                    <option key={b._id} value={b._id}>{b.name}</option>
-                                ))}
+                                <option value="" className="bg-dark-900">Select Bank</option>
+                                {banks.map(b => <option key={b._id} value={b._id} className="bg-dark-900">{b.name}</option>)}
                             </select>
                         </div>
                         <div>
-                            <label className="block text-sm text-dark-300 mb-1.5">Amount (₹)</label>
-                            <input
-                                type="number"
-                                value={form.amount}
-                                onChange={(e) => setForm({ ...form, amount: e.target.value })}
-                                className="w-full px-4 py-3 bg-dark-800/60 border border-dark-600/50 rounded-xl text-dark-100 focus:outline-none focus:border-primary-500/50 transition-all"
-                                placeholder="5000"
-                                min="0.01"
-                                step="0.01"
-                                required
-                            />
+                            <label className="block text-xs font-black text-dark-500 uppercase tracking-[0.2em] mb-4">Transfer Amount</label>
+                            <div className="relative">
+                                <span className="absolute left-6 top-1/2 -translate-y-1/2 text-dark-500 font-bold">₹</span>
+                                <input
+                                    type="number"
+                                    required
+                                    className="w-full pl-12 pr-6 py-4 bg-dark-950/50 border border-white/5 rounded-2xl text-white focus:outline-none focus:border-accent-500/50 focus:ring-4 focus:ring-accent-500/10 transition-all font-bold"
+                                    placeholder="0.00"
+                                    value={formData.amount}
+                                    onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                                />
+                            </div>
                         </div>
-                        <div className="flex items-end">
-                            <button
-                                type="submit"
-                                className="w-full py-3 bg-accent-500 text-white font-medium rounded-xl hover:bg-accent-600 transition-all"
-                            >
-                                Add
+                        <div className="md:col-span-3 flex justify-end pt-4 border-t border-white/5">
+                            <button type="submit" className="px-10 py-4 bg-accent-500 hover:bg-accent-400 text-dark-950 font-black rounded-2xl shadow-xl shadow-accent-500/30 transition-all active:scale-95">
+                                Execute Transaction ⚡
                             </button>
                         </div>
                     </form>
                 </div>
             )}
 
-            {/* Filters */}
-            <div className="glass-card mb-6">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-                    <div>
-                        <label className="block text-xs text-dark-400 mb-1">Filter by Bank</label>
-                        <select
-                            value={filter.bankId}
-                            onChange={(e) => setFilter({ ...filter, bankId: e.target.value })}
-                            className="w-full px-3 py-2 bg-dark-800/60 border border-dark-600/50 rounded-lg text-sm text-dark-100 focus:outline-none focus:border-primary-500/50"
-                        >
-                            <option value="">All Banks</option>
-                            {banks.map(b => <option key={b._id} value={b._id}>{b.name}</option>)}
-                        </select>
-                    </div>
-                    <div>
-                        <label className="block text-xs text-dark-400 mb-1">Min Amount</label>
-                        <input
-                            type="number"
-                            value={filter.minAmount}
-                            onChange={(e) => setFilter({ ...filter, minAmount: e.target.value })}
-                            className="w-full px-3 py-2 bg-dark-800/60 border border-dark-600/50 rounded-lg text-sm text-dark-100 focus:outline-none focus:border-primary-500/50"
-                            placeholder="0"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-xs text-dark-400 mb-1">Max Amount</label>
-                        <input
-                            type="number"
-                            value={filter.maxAmount}
-                            onChange={(e) => setFilter({ ...filter, maxAmount: e.target.value })}
-                            className="w-full px-3 py-2 bg-dark-800/60 border border-dark-600/50 rounded-lg text-sm text-dark-100 focus:outline-none focus:border-primary-500/50"
-                            placeholder="100000"
-                        />
-                    </div>
-                    <button
-                        onClick={handleFilter}
-                        className="px-4 py-2 bg-dark-700 text-dark-200 rounded-lg hover:bg-dark-600 transition-all text-sm font-medium"
+            <div className="glass-card mb-8 p-4 md:flex flex-wrap items-center gap-6 border-white/5">
+                <div className="flex-1 min-w-[200px]">
+                    <label className="block text-[10px] font-black text-dark-500 uppercase tracking-widest mb-1.5 ml-1">Node Filter</label>
+                    <select
+                        className="w-full bg-dark-950/50 border border-white/5 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-primary-500 transition-all font-bold"
+                        value={filters.bankId}
+                        onChange={(e) => setFilters({ ...filters, bankId: e.target.value })}
                     >
-                        Apply Filters
-                    </button>
+                        <option value="">All Active Nodes</option>
+                        {banks.map(b => <option key={b._id} value={b._id}>{b.name}</option>)}
+                    </select>
+                </div>
+                <div className="flex gap-4 min-w-[300px]">
+                    <div className="flex-1">
+                        <label className="block text-[10px] font-black text-dark-500 uppercase tracking-widest mb-1.5 ml-1">Min Value</label>
+                        <input
+                            type="number"
+                            placeholder="₹ 0"
+                            className="w-full bg-dark-950/50 border border-white/5 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-primary-500 transition-all font-bold"
+                            value={filters.minAmount}
+                            onChange={(e) => setFilters({ ...filters, minAmount: e.target.value })}
+                        />
+                    </div>
+                    <div className="flex-1">
+                        <label className="block text-[10px] font-black text-dark-500 uppercase tracking-widest mb-1.5 ml-1">Max Value</label>
+                        <input
+                            type="number"
+                            placeholder="₹ 99M"
+                            className="w-full bg-dark-950/50 border border-white/5 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-primary-500 transition-all font-bold"
+                            value={filters.maxAmount}
+                            onChange={(e) => setFilters({ ...filters, maxAmount: e.target.value })}
+                        />
+                    </div>
                 </div>
             </div>
 
-            {/* Transaction List */}
-            {loading ? (
-                <div className="space-y-3">
-                    {[1, 2, 3].map(i => <div key={i} className="glass-card h-16 animate-pulse" />)}
-                </div>
-            ) : transactions.length === 0 ? (
-                <div className="glass-card text-center py-12">
-                    <p className="text-4xl mb-3">💸</p>
-                    <p className="text-dark-400">No transactions yet. Add a transaction to get started!</p>
-                </div>
-            ) : (
-                <div className="space-y-3">
-                    {transactions.map((tx, i) => (
-                        <div key={tx._id} className="glass-card flex items-center justify-between py-4 animate-slide-in"
-                            style={{ animationDelay: `${i * 50}ms` }}
+            <div className="space-y-4">
+                {transactions.length === 0 ? (
+                    <div className="glass-card p-20 text-center border-dashed border-2 border-white/5">
+                        <p className="text-dark-500 font-bold uppercase tracking-widest">No matching records found in stream.</p>
+                    </div>
+                ) : (
+                    transactions.map((tx, i) => (
+                        <div
+                            key={tx._id}
+                            className="glass-card flex flex-col md:flex-row md:items-center justify-between gap-6 p-6 group hover:border-white/10 transition-all animate-staggered-fade-in relative overflow-hidden"
+                            style={{ animationDelay: `${i * 0.05}s` }}
                         >
-                            <div className="flex items-center gap-4">
-                                <div className="w-10 h-10 rounded-full bg-danger-500/15 flex items-center justify-center text-danger-400 text-sm font-bold">
-                                    {tx.debtor?.name?.[0] || '?'}
+                            <div className="absolute inset-y-0 left-0 w-1 bg-gradient-to-b from-primary-400 to-accent-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+
+                            <div className="flex items-center gap-8 flex-1">
+                                <div className="hidden sm:flex flex-col items-center">
+                                    <div className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-xs text-dark-500 font-bold">{transactions.length - i}</div>
+                                    <div className="w-px h-8 bg-gradient-to-b from-white/10 to-transparent mt-2"></div>
                                 </div>
-                                <div>
-                                    <p className="text-sm">
-                                        <span className="font-semibold text-danger-400">{tx.debtor?.name || 'Unknown'}</span>
-                                        <span className="text-dark-500 mx-2">→</span>
-                                        <span className="font-semibold text-accent-400">{tx.creditor?.name || 'Unknown'}</span>
-                                    </p>
-                                    <p className="text-xs text-dark-500">{new Date(tx.createdAt).toLocaleString()}</p>
+
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-12 flex-1">
+                                    <div className="min-w-[120px]">
+                                        <p className="text-[10px] font-black text-dark-500 uppercase tracking-widest mb-1">Debtor Node</p>
+                                        <p className="text-lg font-black text-white truncate">{tx.debtor?.name}</p>
+                                    </div>
+
+                                    <div className="flex flex-col items-center justify-center px-4 py-2 rounded-2xl bg-white/2 border border-white/5 relative group-hover:border-primary-500/20 transition-all">
+                                        <span className="text-lg animate-pulse">➡️</span>
+                                        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-dark-900 border border-white/10 px-2 py-0.5 rounded text-[8px] font-black text-primary-400 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">TRANSFER</div>
+                                    </div>
+
+                                    <div className="min-w-[120px]">
+                                        <p className="text-[10px] font-black text-dark-500 uppercase tracking-widest mb-1">Creditor Node</p>
+                                        <p className="text-lg font-black text-white truncate">{tx.creditor?.name}</p>
+                                    </div>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-4">
-                                <span className="text-lg font-bold text-white">₹{tx.amount.toLocaleString()}</span>
+
+                            <div className="flex items-center justify-between md:justify-end gap-10 border-t md:border-t-0 border-white/5 pt-4 md:pt-0">
+                                <div className="text-right">
+                                    <p className="text-[10px] font-black text-dark-500 uppercase tracking-widest mb-1">Quantum Value</p>
+                                    <p className="text-2xl font-black text-white tracking-tighter group-hover:text-accent-400 transition-colors">₹{tx.amount.toLocaleString()}</p>
+                                </div>
                                 <button
                                     onClick={() => handleDelete(tx._id)}
-                                    className="text-dark-500 hover:text-danger-400 transition-colors"
-                                    title="Delete"
+                                    className="w-12 h-12 flex items-center justify-center rounded-2xl bg-dark-950 border border-white/5 text-dark-700 hover:text-danger-400 hover:border-danger-500/20 hover:bg-danger-500/10 transition-all"
                                 >
-                                    ×
+                                    🗑️
                                 </button>
                             </div>
                         </div>
-                    ))}
-                </div>
-            )}
+                    ))
+                )}
+            </div>
         </div>
     );
 }
