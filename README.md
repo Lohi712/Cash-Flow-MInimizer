@@ -77,7 +77,7 @@ npm install
 Create a `.env` file in `backend/`:
 ```
 PORT=5000
-MONGODB_URI=mongodb+srv://your_user:your_pass@cluster0.xxxxx.mongodb.net/cashflow
+MONGODB_URI=your_mongodb_connection_string_here
 JWT_SECRET=your_secret_key
 ```
 
