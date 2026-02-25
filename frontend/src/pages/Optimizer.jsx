@@ -24,15 +24,15 @@ export default function Optimizer() {
 
                 <div className="relative z-10 flex flex-col items-center text-center">
                     <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary-500/10 rounded-full border border-primary-500/20 text-[10px] font-black text-primary-400 uppercase tracking-widest mb-8">
-                        <span className="w-1.5 h-1.5 rounded-full bg-primary-400 animate-ping"></span>
-                        Algorithmic Compression Active
+                        <span className="w-1.5 h-1.5 rounded-full bg-primary-400 animate-pulse"></span>
+                        Ready to optimize
                     </div>
 
                     <h1 className="text-6xl font-black text-white tracking-tighter mb-6 leading-[0.9]">
-                        Optimize <span className="gradient-text">Cash Flow</span>
+                        Simplify your <span className="gradient-text">payments</span>
                     </h1>
                     <p className="text-lg text-dark-400 max-w-2xl font-medium mb-10 leading-relaxed">
-                        Execute the Max-Heap settlement engine to identify redundant value cycles and collapse them into a minimum set of direct transfers.
+                        We’ll look at all your transactions and figure out the fewest transfers needed to settle everyone up. Less hassle, same result.
                     </p>
 
                     <button
@@ -44,12 +44,12 @@ export default function Optimizer() {
                         {loading ? (
                             <div className="flex items-center gap-4">
                                 <span className="w-6 h-6 border-4 border-white/20 border-t-white rounded-full animate-spin"></span>
-                                <span>Compressing Graph...</span>
-                            </div>
+                            <span>Working on it...</span>
+                        </div>
                         ) : (
-                            <div className="flex items-center gap-4">
-                                <span>Run Settlement Engine</span>
-                                <span className="text-2xl animate-pulse">⚡</span>
+                        <div className="flex items-center gap-4">
+                                <span>Optimize Now</span>
+                                <span className="text-2xl">✨</span>
                             </div>
                         )}
                     </button>
@@ -60,21 +60,21 @@ export default function Optimizer() {
                 <div className="animate-slide-up">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
                         <div className="metric-orb glass-card">
-                            <p className="text-[10px] font-black text-dark-500 uppercase tracking-widest mb-2">Pre-Settlement Count</p>
+                            <p className="text-xs font-medium text-dark-500 mb-2">Before</p>
                             <p className="text-4xl font-black text-white tracking-tighter">{result.originalCount}</p>
-                            <div className="mt-4 px-3 py-1 bg-white/5 rounded-lg text-[10px] font-bold text-dark-400 uppercase">Original Graph</div>
+                            <div className="mt-4 px-3 py-1 bg-white/5 rounded-lg text-[10px] font-medium text-dark-400">Original</div>
                         </div>
                         <div className="metric-orb glass-card border-accent-500/20 bg-accent-500/5">
-                            <p className="text-[10px] font-black text-accent-500 uppercase tracking-widest mb-2">Optimized Count</p>
+                            <p className="text-xs font-medium text-accent-500 mb-2">After</p>
                             <p className="text-4xl font-black text-white tracking-tighter">{result.optimizedCount}</p>
-                            <div className="mt-4 px-3 py-1 bg-accent-500/20 rounded-lg text-[10px] font-bold text-accent-400 uppercase">Minimized Graph</div>
+                            <div className="mt-4 px-3 py-1 bg-accent-500/20 rounded-lg text-[10px] font-medium text-accent-400">Optimized</div>
                         </div>
                         <div className="metric-orb glass-card border-primary-500/20 bg-primary-500/5">
-                            <p className="text-[10px] font-black text-primary-400 uppercase tracking-widest mb-2">Efficiency Gain</p>
+                            <p className="text-xs font-medium text-primary-400 mb-2">Saved</p>
                             <p className="text-4xl font-black text-white tracking-tighter">
                                 {Math.round((1 - result.optimizedCount / (result.originalCount || 1)) * 100)}%
                             </p>
-                            <div className="mt-4 px-3 py-1 bg-primary-500/20 rounded-lg text-[10px] font-bold text-primary-400 uppercase">Compression Rate</div>
+                            <div className="mt-4 px-3 py-1 bg-primary-500/20 rounded-lg text-[10px] font-medium text-primary-400">Reduction</div>
                         </div>
                     </div>
 
@@ -82,8 +82,8 @@ export default function Optimizer() {
                         <div className="glass-card">
                             <div className="flex items-center justify-between mb-8 border-b border-white/5 pb-6">
                                 <div>
-                                    <h3 className="text-xl font-bold text-white mb-1">Settlement Sequence</h3>
-                                    <p className="text-xs text-dark-500 font-black uppercase tracking-widest">Optimized Transfer Protocol</p>
+                                    <h3 className="text-xl font-bold text-white mb-1">Simplified Transfers</h3>
+                                    <p className="text-xs text-dark-500 font-medium">Here’s how to settle up with fewer payments</p>
                                 </div>
                                 <div className="w-10 h-10 rounded-2xl bg-dark-950 flex items-center justify-center text-xl">📜</div>
                             </div>
@@ -109,8 +109,8 @@ export default function Optimizer() {
                         <div className="glass-card">
                             <div className="flex items-center justify-between mb-8 border-b border-white/5 pb-6">
                                 <div>
-                                    <h3 className="text-xl font-bold text-white mb-1">Final Net Weights</h3>
-                                    <p className="text-xs text-dark-500 font-black uppercase tracking-widest">Post-Optimization Node Status</p>
+                                    <h3 className="text-xl font-bold text-white mb-1">Final Balances</h3>
+                                    <p className="text-xs text-dark-500 font-medium">Where each bank stands after settling</p>
                                 </div>
                                 <div className="w-10 h-10 rounded-2xl bg-dark-950 flex items-center justify-center text-xl">⚖️</div>
                             </div>

@@ -1,13 +1,8 @@
 /**
  * Cash Flow Optimizer — Fixed & Optimized Algorithm
- * 
+ *
  * Uses a greedy approach with max-heap to minimize the number of transactions
  * needed to settle all debts. Also considers payment-type matching between banks.
- * 
- * DSA Concepts Used:
- * - Max Heap (priority queue) for greedy debtor-creditor matching
- * - Graph representation of cash flows (adjacency list)
- * - Greedy algorithm for transaction minimization
  */
 
 class MaxHeap {
@@ -65,33 +60,11 @@ class MaxHeap {
     }
 }
 
-/**
- * Checks if two banks share at least one common payment type.
- */
 function hasCommonPaymentType(bankA, bankB) {
     return bankA.paymentTypes.some((type) => bankB.paymentTypes.includes(type));
 }
 
-/**
- * Optimizes cash flow to minimize the number of transactions.
- * 
- * Algorithm:
- * 1. Compute net amount for each bank from all transactions
- * 2. Separate banks into debtors (net < 0) and creditors (net > 0)
- * 3. Use two max-heaps — greedily match the largest debtor with the largest
- *    compatible creditor (by payment type)
- * 4. The transaction amount is min(debtor_debt, creditor_credit)
- * 5. Push remaining amounts back into the heaps
- * 
- * Time Complexity: O(N * K * log N) where N = number of banks, K = avg payment types
- * Space Complexity: O(N)
- * 
- * @param {Array} banks - Array of bank objects with { _id, name, paymentTypes }
- * @param {Array} transactions - Array of { debtor, creditor, amount }
- * @returns {{ originalCount, optimizedCount, optimizedTransactions, netAmounts }}
- */
 function optimizeCashFlow(banks, transactions) {
-    // Step 1: Compute net amounts for each bank
     const netAmounts = {};
     const bankMap = {};
 
@@ -108,7 +81,6 @@ function optimizeCashFlow(banks, transactions) {
         netAmounts[creditorId] = (netAmounts[creditorId] || 0) + tx.amount;
     }
 
-    // Step 2: Separate into debtors and creditors using max-heaps
     const debtorHeap = new MaxHeap();
     const creditorHeap = new MaxHeap();
 
@@ -120,13 +92,11 @@ function optimizeCashFlow(banks, transactions) {
         }
     }
 
-    // Step 3: Greedy matching with payment-type compatibility
     const optimizedTransactions = [];
 
     while (debtorHeap.size() > 0 && creditorHeap.size() > 0) {
         const debtor = debtorHeap.pop();
 
-        // Find the best compatible creditor
         let creditor = null;
         const skippedCreditors = [];
 
@@ -143,18 +113,12 @@ function optimizeCashFlow(banks, transactions) {
             }
         }
 
-        // Push skipped creditors back
         for (const skipped of skippedCreditors) {
             creditorHeap.push(skipped);
         }
 
-        if (!creditor) {
-            // No compatible creditor found — this shouldn't happen in a valid system
-            // but if it does, skip this debtor
-            continue;
-        }
+        if (!creditor) continue;
 
-        // Step 4: Settle the minimum of the two amounts
         const settleAmount = Math.min(debtor.amount, creditor.amount);
 
         optimizedTransactions.push({
@@ -165,7 +129,6 @@ function optimizeCashFlow(banks, transactions) {
             amount: Math.round(settleAmount * 100) / 100,
         });
 
-        // Step 5: Push remaining amounts back
         const debtorRemaining = debtor.amount - settleAmount;
         const creditorRemaining = creditor.amount - settleAmount;
 
@@ -177,7 +140,6 @@ function optimizeCashFlow(banks, transactions) {
         }
     }
 
-    // Build net amounts summary for response
     const netAmountsSummary = Object.entries(netAmounts).map(([bankId, net]) => ({
         bankId,
         bankName: bankMap[bankId] ? bankMap[bankId].name : 'Unknown',

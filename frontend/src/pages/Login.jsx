@@ -43,16 +43,15 @@ export default function Login() {
             <div className="w-full max-w-md z-10">
                 <div className="text-center mb-10 group">
                     <div className="w-20 h-20 bg-gradient-to-br from-primary-500 to-accent-500 rounded-3xl mx-auto mb-6 flex items-center justify-center text-4xl shadow-2xl shadow-primary-500/20 group-hover:scale-110 transition-transform duration-500">
-                        💵
                     </div>
-                    <h1 className="text-4xl font-black tracking-tighter text-white mb-2">MINIMIZER</h1>
-                    <p className="text-dark-500 font-bold uppercase tracking-[0.3em] text-[10px]">Financial Graph Engine</p>
+                    <h1 className="text-4xl font-black tracking-tighter text-white mb-2">CashFlow</h1>
+                    <p className="text-dark-500 font-semibold tracking-widest text-xs">Your money, simplified</p>
                 </div>
 
                 <div className="glass-card p-10 border-white/10 relative overflow-hidden">
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary-500 to-transparent opacity-50"></div>
 
-                    <h2 className="text-2xl font-bold text-white mb-8 text-center">{isLogin ? 'Welcome Back' : 'Create Protocol'}</h2>
+                    <h2 className="text-2xl font-bold text-white mb-8 text-center">{isLogin ? 'Welcome back 👋' : 'Create your account'}</h2>
 
                     {error && (
                         <div className="mb-6 p-4 rounded-2xl bg-danger-500/10 border border-danger-500/20 text-danger-400 text-sm font-medium animate-shake">
@@ -63,7 +62,7 @@ export default function Login() {
                     <form onSubmit={handleSubmit} className="space-y-6">
                         {!isLogin && (
                             <div>
-                                <label className="block text-xs font-bold text-dark-500 uppercase tracking-widest mb-2 ml-1">Identity Name</label>
+                                <label className="block text-xs font-semibold text-dark-400 mb-2 ml-1">Your name</label>
                                 <input
                                     type="text"
                                     required
@@ -75,7 +74,7 @@ export default function Login() {
                             </div>
                         )}
                         <div>
-                            <label className="block text-xs font-bold text-dark-500 uppercase tracking-widest mb-2 ml-1">Access Email</label>
+                            <label className="block text-xs font-semibold text-dark-400 mb-2 ml-1">Email address</label>
                             <input
                                 type="email"
                                 required
@@ -86,7 +85,7 @@ export default function Login() {
                             />
                         </div>
                         <div>
-                            <label className="block text-xs font-bold text-dark-500 uppercase tracking-widest mb-2 ml-1">Security Key</label>
+                            <label className="block text-xs font-semibold text-dark-400 mb-2 ml-1">Password</label>
                             <input
                                 type="password"
                                 required
@@ -106,8 +105,8 @@ export default function Login() {
                                 <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
                             ) : (
                                 <>
-                                    <span>{isLogin ? 'Initialize Session' : 'Generate Core'}</span>
-                                    <span className="text-xl">🚀</span>
+                                    <span>{isLogin ? 'Sign in' : 'Create account'}</span>
+                                    <span className="text-xl">→</span>
                                 </>
                             )}
                         </button>

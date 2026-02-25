@@ -60,15 +60,15 @@ export default function Transactions() {
         <div className="animate-fade-in pb-20">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
                 <div>
-                    <h1 className="text-5xl font-black tracking-tighter text-white mb-2">Ledger Stream</h1>
-                    <p className="text-dark-400 font-medium">Real-time visualization of inter-node value transfers.</p>
+                    <h1 className="text-5xl font-black tracking-tighter text-white mb-2">Transactions</h1>
+                    <p className="text-dark-400 font-medium">Keep track of every transfer between your banks.</p>
                 </div>
                 <button
                     onClick={() => setIsAdding(!isAdding)}
                     className={`px-8 py-4 rounded-2xl font-bold flex items-center gap-3 transition-all active:scale-95 shadow-xl ${isAdding ? 'bg-dark-900 text-white border border-white/10' : 'bg-accent-500 hover:bg-accent-400 text-dark-950 shadow-accent-500/20'}`}
                 >
-                    {isAdding ? 'Cancel Entry' : 'Manual Transfer'}
-                    <span className="text-xl">{isAdding ? '➖' : '💸'}</span>
+                    {isAdding ? 'Cancel' : 'New Transfer'}
+                    <span className="text-xl">{isAdding ? '✖' : '💸'}</span>
                 </button>
             </div>
 
@@ -77,7 +77,7 @@ export default function Transactions() {
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-accent-500 to-primary-500"></div>
                     <form onSubmit={handleAddTx} className="grid grid-cols-1 md:grid-cols-3 gap-8">
                         <div>
-                            <label className="block text-xs font-black text-dark-500 uppercase tracking-[0.2em] mb-4">Origin Node (Debtor)</label>
+                            <label className="block text-xs font-semibold text-dark-400 mb-3">From (who's paying)</label>
                             <select
                                 required
                                 className="w-full px-6 py-4 bg-dark-950/50 border border-white/5 rounded-2xl text-white focus:outline-none focus:border-accent-500/50 focus:ring-4 focus:ring-accent-500/10 transition-all font-bold appearance-none cursor-pointer"
@@ -89,7 +89,7 @@ export default function Transactions() {
                             </select>
                         </div>
                         <div>
-                            <label className="block text-xs font-black text-dark-500 uppercase tracking-[0.2em] mb-4">Target Node (Creditor)</label>
+                            <label className="block text-xs font-semibold text-dark-400 mb-3">To (who's receiving)</label>
                             <select
                                 required
                                 className="w-full px-6 py-4 bg-dark-950/50 border border-white/5 rounded-2xl text-white focus:outline-none focus:border-accent-500/50 focus:ring-4 focus:ring-accent-500/10 transition-all font-bold appearance-none cursor-pointer"
@@ -101,7 +101,7 @@ export default function Transactions() {
                             </select>
                         </div>
                         <div>
-                            <label className="block text-xs font-black text-dark-500 uppercase tracking-[0.2em] mb-4">Transfer Amount</label>
+                            <label className="block text-xs font-semibold text-dark-400 mb-3">Amount</label>
                             <div className="relative">
                                 <span className="absolute left-6 top-1/2 -translate-y-1/2 text-dark-500 font-bold">₹</span>
                                 <input
@@ -115,8 +115,8 @@ export default function Transactions() {
                             </div>
                         </div>
                         <div className="md:col-span-3 flex justify-end pt-4 border-t border-white/5">
-                            <button type="submit" className="px-10 py-4 bg-accent-500 hover:bg-accent-400 text-dark-950 font-black rounded-2xl shadow-xl shadow-accent-500/30 transition-all active:scale-95">
-                                Execute Transaction ⚡
+                            <button type="submit" className="px-10 py-4 bg-accent-500 hover:bg-accent-400 text-dark-950 font-bold rounded-2xl shadow-xl shadow-accent-500/30 transition-all active:scale-95">
+                                Send Transfer →
                             </button>
                         </div>
                     </form>
@@ -125,7 +125,7 @@ export default function Transactions() {
 
             <div className="glass-card mb-8 p-4 md:flex flex-wrap items-center gap-6 border-white/5">
                 <div className="flex-1 min-w-[200px]">
-                    <label className="block text-[10px] font-black text-dark-500 uppercase tracking-widest mb-1.5 ml-1">Node Filter</label>
+                    <label className="block text-[10px] font-semibold text-dark-400 mb-1.5 ml-1">Filter by bank</label>
                     <select
                         className="w-full bg-dark-950/50 border border-white/5 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-primary-500 transition-all font-bold"
                         value={filters.bankId}
@@ -137,7 +137,7 @@ export default function Transactions() {
                 </div>
                 <div className="flex gap-4 min-w-[300px]">
                     <div className="flex-1">
-                        <label className="block text-[10px] font-black text-dark-500 uppercase tracking-widest mb-1.5 ml-1">Min Value</label>
+                        <label className="block text-[10px] font-semibold text-dark-400 mb-1.5 ml-1">Min amount</label>
                         <input
                             type="number"
                             placeholder="₹ 0"
@@ -147,7 +147,7 @@ export default function Transactions() {
                         />
                     </div>
                     <div className="flex-1">
-                        <label className="block text-[10px] font-black text-dark-500 uppercase tracking-widest mb-1.5 ml-1">Max Value</label>
+                        <label className="block text-[10px] font-semibold text-dark-400 mb-1.5 ml-1">Max amount</label>
                         <input
                             type="number"
                             placeholder="₹ 99M"
@@ -162,7 +162,7 @@ export default function Transactions() {
             <div className="space-y-4">
                 {transactions.length === 0 ? (
                     <div className="glass-card p-20 text-center border-dashed border-2 border-white/5">
-                        <p className="text-dark-500 font-bold uppercase tracking-widest">No matching records found in stream.</p>
+                        <p className="text-dark-500 font-medium">No transactions found. Try adjusting your filters or add a new transfer.</p>
                     </div>
                 ) : (
                     transactions.map((tx, i) => (
@@ -181,7 +181,7 @@ export default function Transactions() {
 
                                 <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-12 flex-1">
                                     <div className="min-w-[120px]">
-                                        <p className="text-[10px] font-black text-dark-500 uppercase tracking-widest mb-1">Debtor Node</p>
+                                        <p className="text-[10px] font-medium text-dark-500 mb-1">From</p>
                                         <p className="text-lg font-black text-white truncate">{tx.debtor?.name}</p>
                                     </div>
 
@@ -191,7 +191,7 @@ export default function Transactions() {
                                     </div>
 
                                     <div className="min-w-[120px]">
-                                        <p className="text-[10px] font-black text-dark-500 uppercase tracking-widest mb-1">Creditor Node</p>
+                                        <p className="text-[10px] font-medium text-dark-500 mb-1">To</p>
                                         <p className="text-lg font-black text-white truncate">{tx.creditor?.name}</p>
                                     </div>
                                 </div>
@@ -199,7 +199,7 @@ export default function Transactions() {
 
                             <div className="flex items-center justify-between md:justify-end gap-10 border-t md:border-t-0 border-white/5 pt-4 md:pt-0">
                                 <div className="text-right">
-                                    <p className="text-[10px] font-black text-dark-500 uppercase tracking-widest mb-1">Quantum Value</p>
+                                    <p className="text-[10px] font-medium text-dark-500 mb-1">Amount</p>
                                     <p className="text-2xl font-black text-white tracking-tighter group-hover:text-accent-400 transition-colors">₹{tx.amount.toLocaleString()}</p>
                                 </div>
                                 <button

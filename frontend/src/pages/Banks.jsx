@@ -65,14 +65,14 @@ export default function Banks() {
         <div className="animate-fade-in pb-20">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
                 <div>
-                    <h1 className="text-5xl font-black tracking-tighter text-white mb-2">Banking Nodes</h1>
-                    <p className="text-dark-400 font-medium">Manage your financial endpoints and settlement protocols.</p>
+                    <h1 className="text-5xl font-black tracking-tighter text-white mb-2">Your Banks</h1>
+                    <p className="text-dark-400 font-medium">Add and manage the banks involved in your transactions.</p>
                 </div>
                 <button
                     onClick={() => setIsAdding(!isAdding)}
                     className={`px-8 py-4 rounded-2xl font-bold flex items-center gap-3 transition-all active:scale-95 shadow-xl ${isAdding ? 'bg-dark-900 text-white border border-white/10' : 'bg-primary-600 hover:bg-primary-500 text-white shadow-primary-600/20'}`}
                 >
-                    {isAdding ? 'Cancel Entry' : 'Register New Node'}
+                    {isAdding ? 'Cancel' : 'Add Bank'}
                     <span className="text-xl">{isAdding ? '✖' : '➕'}</span>
                 </button>
             </div>
@@ -82,7 +82,7 @@ export default function Banks() {
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary-600 to-accent-500"></div>
                     <form onSubmit={handleAddBank} className="grid grid-cols-1 lg:grid-cols-2 gap-10">
                         <div>
-                            <label className="block text-xs font-black text-dark-500 uppercase tracking-[0.2em] mb-4">Bank Internal Name</label>
+                            <label className="block text-xs font-semibold text-dark-400 mb-3">Bank name</label>
                             <input
                                 type="text"
                                 required
@@ -93,7 +93,7 @@ export default function Banks() {
                             />
                         </div>
                         <div>
-                            <label className="block text-xs font-black text-dark-500 uppercase tracking-[0.2em] mb-4">Settlement Protocols</label>
+                            <label className="block text-xs font-semibold text-dark-400 mb-3">Payment methods supported</label>
                             <div className="flex flex-wrap gap-3">
                                 {availablePayments.map(type => (
                                     <button
@@ -108,8 +108,8 @@ export default function Banks() {
                             </div>
                         </div>
                         <div className="lg:col-span-2 flex justify-end pt-4 border-t border-white/5">
-                            <button type="submit" className="px-10 py-4 bg-primary-600 hover:bg-primary-500 text-white font-black rounded-2xl shadow-xl shadow-primary-600/20 transition-all active:scale-95">
-                                Finalize Node Entry ⚡
+                            <button type="submit" className="px-10 py-4 bg-primary-600 hover:bg-primary-500 text-white font-bold rounded-2xl shadow-xl shadow-primary-600/20 transition-all active:scale-95">
+                                Add Bank →
                             </button>
                         </div>
                     </form>
@@ -118,9 +118,9 @@ export default function Banks() {
 
             {banks.length === 0 ? (
                 <div className="glass-card p-20 text-center border-dashed border-2 border-white/5">
-                    <div className="w-20 h-20 bg-dark-900 rounded-3xl mx-auto flex items-center justify-center text-4xl mb-6 grayscale opacity-50">🏛️</div>
-                    <h3 className="text-2xl font-bold text-white mb-2">No Active Nodes</h3>
-                    <p className="text-dark-500 font-medium">Add your first bank to start mapping the network.</p>
+                    <div className="w-20 h-20 bg-dark-900 rounded-3xl mx-auto flex items-center justify-center text-4xl mb-6 opacity-60">🏦</div>
+                    <h3 className="text-2xl font-bold text-white mb-2">No banks yet</h3>
+                    <p className="text-dark-500 font-medium">Add your first bank to get started!</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
@@ -143,10 +143,10 @@ export default function Banks() {
                             </div>
 
                             <h3 className="text-2xl font-black text-white mb-1 group-hover:text-primary-400 transition-colors leading-tight">{bank.name}</h3>
-                            <p className="text-xs font-bold text-dark-500 uppercase tracking-widest mb-6">Internal Banking Node</p>
+                            <p className="text-xs font-medium text-dark-500 mb-6">Bank account</p>
 
                             <div className="mb-6 p-4 rounded-2xl bg-dark-950/50 border border-white/5">
-                                <p className="text-[10px] font-black text-dark-500 uppercase tracking-widest mb-1">Net Flow Balance</p>
+                                <p className="text-xs font-medium text-dark-500 mb-1">Balance</p>
                                 <p className={`text-2xl font-black tracking-tighter ${bank.netAmount >= 0 ? 'text-accent-400' : 'text-danger-400'}`}>
                                     {bank.netAmount >= 0 ? '+' : '-'}₹{Math.abs(bank.netAmount).toLocaleString()}
                                 </p>

@@ -47,22 +47,22 @@ export default function Reports() {
     return (
         <div className="animate-fade-in pb-20">
             <div className="mb-12">
-                <h1 className="text-5xl font-black tracking-tighter text-white mb-2">Protocol Analytics</h1>
-                <p className="text-dark-400 font-medium">Historical audit trails and predictive cash flow models.</p>
+                <h1 className="text-5xl font-black tracking-tighter text-white mb-2">Reports</h1>
+                <p className="text-dark-400 font-medium">See how your money has been flowing and where it’s headed.</p>
             </div>
 
             <div className="flex p-1.5 bg-dark-900/60 backdrop-blur-md rounded-[2rem] border border-white/5 w-fit mb-12 shadow-2xl">
                 <button
                     onClick={() => setActiveTab('summary')}
-                    className={`px-10 py-3 rounded-full text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'summary' ? 'bg-primary-600 text-white shadow-lg shadow-primary-600/30 nebula-border-glow' : 'text-dark-500 hover:text-dark-300'}`}
+                    className={`px-10 py-3 rounded-full text-xs font-bold tracking-wide transition-all ${activeTab === 'summary' ? 'bg-primary-600 text-white shadow-lg shadow-primary-600/30 nebula-border-glow' : 'text-dark-500 hover:text-dark-300'}`}
                 >
-                    Monthly Summary
+                    Monthly View
                 </button>
                 <button
                     onClick={() => setActiveTab('prediction')}
-                    className={`px-10 py-3 rounded-full text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'prediction' ? 'bg-primary-600 text-white shadow-lg shadow-primary-600/30 nebula-border-glow' : 'text-dark-500 hover:text-dark-300'}`}
+                    className={`px-10 py-3 rounded-full text-xs font-bold tracking-wide transition-all ${activeTab === 'prediction' ? 'bg-primary-600 text-white shadow-lg shadow-primary-600/30 nebula-border-glow' : 'text-dark-500 hover:text-dark-300'}`}
                 >
-                    Cash Projection
+                    Forecast
                 </button>
             </div>
 
@@ -94,10 +94,10 @@ export default function Reports() {
                             <table className="w-full text-left">
                                 <thead>
                                     <tr className="border-b border-white/5">
-                                        <th className="px-8 py-6 text-[10px] font-black text-dark-500 uppercase tracking-widest">Banking Node</th>
-                                        <th className="px-8 py-6 text-[10px] font-black text-dark-500 uppercase tracking-widest">Incoming Flow</th>
-                                        <th className="px-8 py-6 text-[10px] font-black text-dark-500 uppercase tracking-widest">Outgoing Flow</th>
-                                        <th className="px-8 py-6 text-[10px] font-black text-dark-500 uppercase tracking-widest">Net Differential</th>
+                                        <th className="px-8 py-6 text-xs font-semibold text-dark-400">Bank</th>
+                                        <th className="px-8 py-6 text-xs font-semibold text-dark-400">Money In</th>
+                                        <th className="px-8 py-6 text-xs font-semibold text-dark-400">Money Out</th>
+                                        <th className="px-8 py-6 text-xs font-semibold text-dark-400">Net</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-white/2">
@@ -119,7 +119,7 @@ export default function Reports() {
                                 </tbody>
                             </table>
                             {(!summaryData || summaryData.summary.length === 0) && (
-                                <div className="p-20 text-center text-dark-500 font-bold uppercase tracking-widest">No activity recorded for this period.</div>
+                                <div className="p-20 text-center text-dark-500 font-medium">No transactions found for this month.</div>
                             )}
                         </div>
                     </div>
@@ -128,9 +128,9 @@ export default function Reports() {
                 <div className="animate-slide-up">
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         <div className="glass-card space-y-8">
-                            <h3 className="text-xl font-bold text-white">Projection Config</h3>
+                            <h3 className="text-xl font-bold text-white">Forecast Settings</h3>
                             <div>
-                                <label className="block text-[10px] font-black text-dark-500 uppercase tracking-widest mb-4">Target Node</label>
+                                <label className="block text-xs font-semibold text-dark-400 mb-3">Which bank?</label>
                                 <select
                                     className="w-full px-6 py-4 bg-dark-950/50 border border-white/5 rounded-2xl text-white focus:outline-none focus:border-primary-500 transition-all font-bold"
                                     value={selectedBank}
@@ -140,7 +140,7 @@ export default function Reports() {
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-[10px] font-black text-dark-500 uppercase tracking-widest mb-4">Forecast Horizon (Days)</label>
+                                <label className="block text-xs font-semibold text-dark-400 mb-3">How far ahead? (days)</label>
                                 <input
                                     type="range" min="7" max="180"
                                     className="w-full h-2 bg-dark-950 rounded-lg appearance-none cursor-pointer accent-primary-500"
@@ -158,7 +158,7 @@ export default function Reports() {
                                 disabled={loading || !selectedBank}
                                 className="w-full py-4 bg-primary-600 hover:bg-primary-500 text-white font-black rounded-2xl shadow-xl shadow-primary-600/20 transition-all active:scale-95 disabled:opacity-50"
                             >
-                                Run Forecast Model 🔮
+                                Run Forecast →
                             </button>
                         </div>
 
@@ -167,15 +167,15 @@ export default function Reports() {
                                 <>
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                         <div className="metric-orb glass-card">
-                                            <p className="text-[10px] font-black text-dark-500 uppercase tracking-widest mb-2">Estimated Inflow</p>
+                                            <p className="text-xs font-medium text-dark-500 mb-2">Expected coming in</p>
                                             <p className="text-3xl font-black text-accent-400 tracking-tighter">₹{predictionData.predictedIncoming.toLocaleString()}</p>
                                         </div>
                                         <div className="metric-orb glass-card">
-                                            <p className="text-[10px] font-black text-dark-500 uppercase tracking-widest mb-2">Estimated Outflow</p>
+                                            <p className="text-xs font-medium text-dark-500 mb-2">Expected going out</p>
                                             <p className="text-3xl font-black text-danger-400 tracking-tighter">₹{predictionData.predictedOutgoing.toLocaleString()}</p>
                                         </div>
                                         <div className="metric-orb glass-card border-primary-500/20 bg-primary-500/5">
-                                            <p className="text-[10px] font-black text-primary-400 uppercase tracking-widest mb-2">Net Prospect</p>
+                                            <p className="text-xs font-medium text-primary-400 mb-2">Net change</p>
                                             <p className={`text-3xl font-black tracking-tighter ${predictionData.netPredicted >= 0 ? 'text-accent-500' : 'text-danger-500'}`}>
                                                 ₹{predictionData.netPredicted.toLocaleString()}
                                             </p>
@@ -186,23 +186,23 @@ export default function Reports() {
                                         <div className="flex items-center gap-6 mb-8">
                                             <div className="w-16 h-16 rounded-3xl bg-primary-500 flex items-center justify-center text-3xl shadow-2xl shadow-primary-500/20">🧠</div>
                                             <div>
-                                                <h3 className="text-2xl font-black text-white leading-tight">Forecasting Logic</h3>
-                                                <p className="text-dark-500 text-xs font-bold uppercase tracking-widest">Temporal Frequency Analysis</p>
+                                                <h3 className="text-2xl font-bold text-white leading-tight">How we forecast</h3>
+                                                <p className="text-dark-500 text-xs font-medium">Based on your transaction patterns</p>
                                             </div>
                                         </div>
                                         <p className="text-dark-400 font-medium leading-relaxed mb-6">
-                                            Our system analyzes your transactional velocity over a {predictionData.days}-day temporal window. By matching historical averages with current frequency rates, we can estimate future liquidity with high confidence.
+                                            We look at how your money has been moving over the past {predictionData.days} days — how often and how much. From that, we estimate what’s likely coming next. It’s not perfect, but it gives you a solid picture.
                                         </p>
-                                        <div className="p-4 rounded-xl bg-dark-950 border border-white/5 text-[10px] font-bold text-primary-400 uppercase tracking-[0.2em] text-center">
-                                            Confidence Score: 84.7%
+                                        <div className="p-4 rounded-xl bg-dark-950 border border-white/5 text-xs font-medium text-primary-400 text-center">
+                                            Estimated accuracy: ~85%
                                         </div>
                                     </div>
                                 </>
                             ) : (
                                 <div className="glass-card h-full flex flex-col items-center justify-center p-20 text-center border-dashed border-2 border-white/5">
                                     <div className="w-20 h-20 bg-dark-900 rounded-3xl flex items-center justify-center text-4xl mb-6 grayscale opacity-50">🔮</div>
-                                    <h3 className="text-xl font-bold text-white mb-2">Awaiting Parameters</h3>
-                                    <p className="text-dark-500 font-medium">Select a banking node and time horizon to generate a forecast.</p>
+                                    <h3 className="text-xl font-bold text-white mb-2">Ready when you are</h3>
+                                    <p className="text-dark-500 font-medium">Pick a bank and time range to see your forecast.</p>
                                 </div>
                             )}
                         </div>

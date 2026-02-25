@@ -20,11 +20,11 @@ export default function Layout() {
     };
 
     const navItems = [
-        { path: '/', label: 'Overview', icon: '🌌' },
+        { path: '/', label: 'Home', icon: '🏠' },
         { path: '/banks', label: 'Banks', icon: '🏦' },
-        { path: '/transactions', label: 'Transactions', icon: '💸' },
-        { path: '/optimizer', label: 'Optimizer', icon: '⚡' },
-        { path: '/reports', label: 'Analytics', icon: '📊' },
+        { path: '/transactions', label: 'Transfers', icon: '💸' },
+        { path: '/optimizer', label: 'Optimize', icon: '✨' },
+        { path: '/reports', label: 'Reports', icon: '📊' },
     ];
 
     return (
@@ -54,8 +54,8 @@ export default function Layout() {
                             💵
                         </div>
                         <div>
-                            <h2 className="text-xl font-bold tracking-tight text-white leading-none">Minimizer</h2>
-                            <p className="text-[10px] uppercase tracking-widest text-dark-500 font-bold mt-1">Cash Flow Engine</p>
+                            <h2 className="text-xl font-bold tracking-tight text-white leading-none">CashFlow</h2>
+                            <p className="text-[10px] uppercase tracking-widest text-dark-500 font-bold mt-1">Your money, simplified</p>
                         </div>
                     </div>
 
@@ -95,15 +95,15 @@ export default function Layout() {
 
             <main className={`main-content mt-16 ${isOpen ? 'lg:ml-80' : 'ml-0'}`}>
                 <div className="mb-10 flex items-start justify-between">
-                    <div className="flex items-center gap-2 text-xs font-bold text-dark-500 uppercase tracking-widest ml-12 lg:ml-0">
-                        <span>Pages</span>
+                    <div className="flex items-center gap-2 text-xs font-medium text-dark-500 ml-12 lg:ml-0">
+                        <span>Home</span>
                         <span className="text-dark-700">/</span>
-                        <span className="text-primary-400">{location.pathname === '/' ? 'Overview' : location.pathname.split('/')[1]}</span>
+                        <span className="text-primary-400 capitalize">{location.pathname === '/' ? 'Dashboard' : location.pathname.split('/')[1]}</span>
                     </div>
                     <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-dark-900/40 border border-white/5 text-[10px] font-bold text-accent-500 uppercase tracking-tighter">
+                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-dark-900/40 border border-white/5 text-[10px] font-bold text-accent-500 tracking-wider">
                             <span className="w-1.5 h-1.5 rounded-full bg-accent-500 animate-pulse"></span>
-                            Node Engine Active
+                            All systems go
                         </div>
                     </div>
                 </div>

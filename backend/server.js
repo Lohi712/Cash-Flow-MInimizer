@@ -13,11 +13,11 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/banks', require('./routes/banks'));
-app.use('/api/transactions', require('./routes/transactions'));
-app.use('/api/optimize', require('./routes/optimize'));
-app.use('/api/analytics', require('./routes/analytics'));
+app.use('/api/auth', require('./src/routes/auth'));
+app.use('/api/banks', require('./src/routes/banks'));
+app.use('/api/transactions', require('./src/routes/transactions'));
+app.use('/api/optimize', require('./src/routes/optimize'));
+app.use('/api/analytics', require('./src/routes/analytics'));
 
 // Health check
 app.get('/api/health', (req, res) => {
